@@ -117,7 +117,7 @@ class Connection extends PrimaryReadReplicaConnection {
 		private array $params,
 		Driver $driver,
 		?Configuration $config = null,
-		?EventManager $eventManager = null
+		?EventManager $eventManager = null,
 	) {
 		if (!isset($params['adapter'])) {
 			throw new \Exception('adapter not set');
@@ -282,7 +282,7 @@ class Connection extends PrimaryReadReplicaConnection {
 	 * Gets the QueryBuilder for the connection.
 	 *
 	 * @return \Doctrine\DBAL\Query\QueryBuilder
-	 * @deprecated please use $this->getQueryBuilder() instead
+	 * @deprecated 8.0.0 please use $this->getQueryBuilder() instead
 	 */
 	public function createQueryBuilder() {
 		$backtrace = $this->getCallerBacktrace();
@@ -295,7 +295,7 @@ class Connection extends PrimaryReadReplicaConnection {
 	 * Gets the ExpressionBuilder for the connection.
 	 *
 	 * @return \Doctrine\DBAL\Query\Expression\ExpressionBuilder
-	 * @deprecated please use $this->getQueryBuilder()->expr() instead
+	 * @deprecated 8.0.0 please use $this->getQueryBuilder()->expr() instead
 	 */
 	public function getExpressionBuilder() {
 		$backtrace = $this->getCallerBacktrace();
@@ -664,9 +664,9 @@ class Connection extends PrimaryReadReplicaConnection {
 		$msg = $this->errorCode() . ': ';
 		$errorInfo = $this->errorInfo();
 		if (!empty($errorInfo)) {
-			$msg .= 'SQLSTATE = '.$errorInfo[0] . ', ';
-			$msg .= 'Driver Code = '.$errorInfo[1] . ', ';
-			$msg .= 'Driver Message = '.$errorInfo[2];
+			$msg .= 'SQLSTATE = ' . $errorInfo[0] . ', ';
+			$msg .= 'Driver Code = ' . $errorInfo[1] . ', ';
+			$msg .= 'Driver Message = ' . $errorInfo[2];
 		}
 		return $msg;
 	}

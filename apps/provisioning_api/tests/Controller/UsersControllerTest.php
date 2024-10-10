@@ -23,6 +23,7 @@ use OCP\Accounts\IAccountPropertyCollection;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCS\OCSException;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Group\ISubAdmin;
 use OCP\IConfig;
 use OCP\IGroup;
 use OCP\IL10N;
@@ -57,6 +58,8 @@ class UsersControllerTest extends TestCase {
 	protected $api;
 	/** @var IAccountManager|MockObject */
 	protected $accountManager;
+	/** @var ISubAdmin|MockObject */
+	protected $subAdminManager;
 	/** @var IURLGenerator|MockObject */
 	protected $urlGenerator;
 	/** @var IRequest|MockObject */
@@ -86,6 +89,7 @@ class UsersControllerTest extends TestCase {
 		$this->logger = $this->createMock(LoggerInterface::class);
 		$this->request = $this->createMock(IRequest::class);
 		$this->accountManager = $this->createMock(IAccountManager::class);
+		$this->subAdminManager = $this->createMock(ISubAdmin::class);
 		$this->urlGenerator = $this->createMock(IURLGenerator::class);
 		$this->l10nFactory = $this->createMock(IFactory::class);
 		$this->newUserMailHelper = $this->createMock(NewUserMailHelper::class);
@@ -108,6 +112,7 @@ class UsersControllerTest extends TestCase {
 				$this->groupManager,
 				$this->userSession,
 				$this->accountManager,
+				$this->subAdminManager,
 				$this->l10nFactory,
 				$this->urlGenerator,
 				$this->logger,
@@ -376,6 +381,7 @@ class UsersControllerTest extends TestCase {
 				$this->groupManager,
 				$this->userSession,
 				$this->accountManager,
+				$this->subAdminManager,
 				$this->l10nFactory,
 				$this->urlGenerator,
 				$this->logger,
@@ -931,7 +937,6 @@ class UsersControllerTest extends TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$loggedInUser
-			->expects($this->exactly(2))
 			->method('getUID')
 			->willReturn('admin');
 		$targetUser = $this->getMockBuilder(IUser::class)
@@ -941,16 +946,13 @@ class UsersControllerTest extends TestCase {
 			->method('getSystemEMailAddress')
 			->willReturn('demo@nextcloud.com');
 		$this->userSession
-			->expects($this->once())
 			->method('getUser')
 			->willReturn($loggedInUser);
 		$this->userManager
-			->expects($this->exactly(2))
 			->method('get')
 			->with('UID')
 			->willReturn($targetUser);
 		$this->groupManager
-			->expects($this->once())
 			->method('isAdmin')
 			->with('admin')
 			->willReturn(true);
@@ -990,6 +992,7 @@ class UsersControllerTest extends TestCase {
 			IAccountManager::PROPERTY_HEADLINE => ['value' => 'headline'],
 			IAccountManager::PROPERTY_BIOGRAPHY => ['value' => 'biography'],
 			IAccountManager::PROPERTY_PROFILE_ENABLED => ['value' => '1'],
+			IAccountManager::PROPERTY_PRONOUNS => ['value' => 'they/them'],
 		]);
 		$this->config
 			->method('getUserValue')
@@ -1068,6 +1071,7 @@ class UsersControllerTest extends TestCase {
 			'profile_enabled' => '1',
 			'notify_email' => null,
 			'manager' => '',
+			'pronouns' => 'they/them',
 		];
 		$this->assertEquals($expected, $this->invokePrivate($this->api, 'getUserData', ['UID']));
 	}
@@ -1077,7 +1081,6 @@ class UsersControllerTest extends TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$loggedInUser
-			->expects($this->exactly(2))
 			->method('getUID')
 			->willReturn('subadmin');
 		$targetUser = $this->getMockBuilder(IUser::class)
@@ -1088,16 +1091,13 @@ class UsersControllerTest extends TestCase {
 			->method('getSystemEMailAddress')
 			->willReturn('demo@nextcloud.com');
 		$this->userSession
-			->expects($this->once())
 			->method('getUser')
 			->willReturn($loggedInUser);
 		$this->userManager
-			->expects($this->exactly(2))
 			->method('get')
 			->with('UID')
 			->willReturn($targetUser);
 		$this->groupManager
-			->expects($this->once())
 			->method('isAdmin')
 			->with('subadmin')
 			->willReturn(false);
@@ -1171,6 +1171,7 @@ class UsersControllerTest extends TestCase {
 			IAccountManager::PROPERTY_HEADLINE => ['value' => 'headline'],
 			IAccountManager::PROPERTY_BIOGRAPHY => ['value' => 'biography'],
 			IAccountManager::PROPERTY_PROFILE_ENABLED => ['value' => '1'],
+			IAccountManager::PROPERTY_PRONOUNS => ['value' => 'they/them'],
 		]);
 
 		$this->l10nFactory
@@ -1209,6 +1210,7 @@ class UsersControllerTest extends TestCase {
 			'profile_enabled' => '1',
 			'notify_email' => null,
 			'manager' => '',
+			'pronouns' => 'they/them',
 		];
 		$this->assertEquals($expected, $this->invokePrivate($this->api, 'getUserData', ['UID']));
 	}
@@ -1263,23 +1265,19 @@ class UsersControllerTest extends TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$loggedInUser
-			->expects($this->exactly(3))
 			->method('getUID')
 			->willReturn('UID');
 		$targetUser = $this->getMockBuilder(IUser::class)
 			->disableOriginalConstructor()
 			->getMock();
 		$this->userSession
-			->expects($this->once())
 			->method('getUser')
 			->willReturn($loggedInUser);
 		$this->userManager
-			->expects($this->exactly(2))
 			->method('get')
 			->with('UID')
 			->willReturn($targetUser);
 		$this->groupManager
-			->expects($this->once())
 			->method('isAdmin')
 			->with('UID')
 			->willReturn(false);
@@ -1351,6 +1349,7 @@ class UsersControllerTest extends TestCase {
 			IAccountManager::PROPERTY_HEADLINE => ['value' => 'headline'],
 			IAccountManager::PROPERTY_BIOGRAPHY => ['value' => 'biography'],
 			IAccountManager::PROPERTY_PROFILE_ENABLED => ['value' => '1'],
+			IAccountManager::PROPERTY_PRONOUNS => ['value' => 'they/them'],
 		]);
 
 		$this->l10nFactory
@@ -1388,6 +1387,7 @@ class UsersControllerTest extends TestCase {
 			'profile_enabled' => '1',
 			'notify_email' => null,
 			'manager' => '',
+			'pronouns' => 'they/them',
 		];
 		$this->assertEquals($expected, $this->invokePrivate($this->api, 'getUserData', ['UID']));
 	}
@@ -1617,7 +1617,7 @@ class UsersControllerTest extends TestCase {
 			->with($userAccount);
 
 		$this->expectException(OCSException::class);
-		$this->expectExceptionCode(102);
+		$this->expectExceptionCode(101);
 		$this->api->editUser('UserToEdit', 'additional_mail', 'demo@nextcloud.com')->getData();
 	}
 
@@ -1676,13 +1676,13 @@ class UsersControllerTest extends TestCase {
 			->with($userAccount);
 
 		$this->expectException(OCSException::class);
-		$this->expectExceptionCode(102);
+		$this->expectExceptionCode(101);
 		$this->api->editUser('UserToEdit', 'additional_mail', 'demo1@nextcloud.com')->getData();
 	}
 
 	public function testEditUserRegularUserSelfEditChangeEmailInvalid(): void {
 		$this->expectException(\OCP\AppFramework\OCS\OCSException::class);
-		$this->expectExceptionCode(102);
+		$this->expectExceptionCode(101);
 
 		$loggedInUser = $this->getMockBuilder(IUser::class)
 			->disableOriginalConstructor()
@@ -1729,6 +1729,7 @@ class UsersControllerTest extends TestCase {
 			[IAccountManager::PROPERTY_HEADLINE, 'Hi', 'Hello'],
 			[IAccountManager::PROPERTY_BIOGRAPHY, 'A biography', 'Another biography'],
 			[IAccountManager::PROPERTY_PROFILE_ENABLED, '1', '0'],
+			[IAccountManager::PROPERTY_PRONOUNS, 'they/them', 'he/him'],
 		];
 	}
 
@@ -1806,6 +1807,7 @@ class UsersControllerTest extends TestCase {
 			[IAccountManager::PROPERTY_HEADLINE, IAccountManager::SCOPE_LOCAL, IAccountManager::SCOPE_FEDERATED],
 			[IAccountManager::PROPERTY_BIOGRAPHY, IAccountManager::SCOPE_LOCAL, IAccountManager::SCOPE_FEDERATED],
 			[IAccountManager::PROPERTY_PROFILE_ENABLED, IAccountManager::SCOPE_LOCAL, IAccountManager::SCOPE_FEDERATED],
+			[IAccountManager::PROPERTY_PRONOUNS, IAccountManager::SCOPE_LOCAL, IAccountManager::SCOPE_FEDERATED],
 		];
 	}
 
@@ -1914,7 +1916,7 @@ class UsersControllerTest extends TestCase {
 
 	public function testEditUserRegularUserSelfEditChangeQuota(): void {
 		$this->expectException(\OCP\AppFramework\OCS\OCSException::class);
-		$this->expectExceptionCode(103);
+		$this->expectExceptionCode(113);
 
 		$loggedInUser = $this->getMockBuilder(IUser::class)
 			->disableOriginalConstructor()
@@ -2001,7 +2003,7 @@ class UsersControllerTest extends TestCase {
 	public function testEditUserAdminUserSelfEditChangeInvalidQuota(): void {
 		$this->expectException(\OCP\AppFramework\OCS\OCSException::class);
 		$this->expectExceptionMessage('Invalid quota value: ABC');
-		$this->expectExceptionCode(102);
+		$this->expectExceptionCode(101);
 
 		$loggedInUser = $this->getMockBuilder(IUser::class)->disableOriginalConstructor()->getMock();
 		$loggedInUser
@@ -3659,6 +3661,7 @@ class UsersControllerTest extends TestCase {
 				$this->groupManager,
 				$this->userSession,
 				$this->accountManager,
+				$this->subAdminManager,
 				$this->l10nFactory,
 				$this->urlGenerator,
 				$this->logger,
@@ -3690,7 +3693,8 @@ class UsersControllerTest extends TestCase {
 					'role' => 'role',
 					'headline' => 'headline',
 					'biography' => 'biography',
-					'profile_enabled' => '1'
+					'profile_enabled' => '1',
+					'pronouns' => 'they/them',
 				]
 			);
 
@@ -3711,6 +3715,7 @@ class UsersControllerTest extends TestCase {
 			'headline' => 'headline',
 			'biography' => 'biography',
 			'profile_enabled' => '1',
+			'pronouns' => 'they/them',
 		];
 
 		$this->assertSame($expected, $api->getCurrentUser()->getData());
@@ -3746,6 +3751,7 @@ class UsersControllerTest extends TestCase {
 				$this->groupManager,
 				$this->userSession,
 				$this->accountManager,
+				$this->subAdminManager,
 				$this->l10nFactory,
 				$this->urlGenerator,
 				$this->logger,
@@ -3775,7 +3781,8 @@ class UsersControllerTest extends TestCase {
 			'role' => 'role',
 			'headline' => 'headline',
 			'biography' => 'biography',
-			'profile_enabled' => '1'
+			'profile_enabled' => '1',
+			'pronouns' => 'they/them',
 		];
 
 		$api->expects($this->exactly(2))
@@ -4115,6 +4122,7 @@ class UsersControllerTest extends TestCase {
 				IAccountManager::PROPERTY_HEADLINE,
 				IAccountManager::PROPERTY_BIOGRAPHY,
 				IAccountManager::PROPERTY_PROFILE_ENABLED,
+				IAccountManager::PROPERTY_PRONOUNS,
 			]],
 			[true, ISetDisplayNameBackend::class, [
 				IAccountManager::PROPERTY_DISPLAYNAME,
@@ -4130,6 +4138,7 @@ class UsersControllerTest extends TestCase {
 				IAccountManager::PROPERTY_HEADLINE,
 				IAccountManager::PROPERTY_BIOGRAPHY,
 				IAccountManager::PROPERTY_PROFILE_ENABLED,
+				IAccountManager::PROPERTY_PRONOUNS,
 			]],
 			[true, UserInterface::class, [
 				IAccountManager::PROPERTY_EMAIL,
@@ -4144,6 +4153,7 @@ class UsersControllerTest extends TestCase {
 				IAccountManager::PROPERTY_HEADLINE,
 				IAccountManager::PROPERTY_BIOGRAPHY,
 				IAccountManager::PROPERTY_PROFILE_ENABLED,
+				IAccountManager::PROPERTY_PRONOUNS,
 			]],
 		];
 	}

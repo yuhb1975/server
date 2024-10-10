@@ -16,6 +16,7 @@ use OC\Files\Storage\Storage;
 use OC\Files\Storage\Temporary;
 use OC\Files\View;
 use OC\Share20\ShareDisableChecker;
+use OCA\Files_Trashbin\Trash\ITrashManager;
 use OCP\Cache\CappedMemoryCache;
 use OCP\Constants;
 use OCP\Files\Config\IMountProvider;
@@ -26,35 +27,37 @@ use OCP\Files\Storage\IStorage;
 use OCP\IDBConnection;
 use OCP\Lock\ILockingProvider;
 use OCP\Lock\LockedException;
+use OCP\Server;
 use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
 use OCP\Util;
+use PHPUnit\Framework\MockObject\MockObject;
 use Test\HookHelper;
 use Test\TestMoveableMountPoint;
 use Test\Traits\UserTrait;
 
 class TemporaryNoTouch extends Temporary {
-	public function touch($path, $mtime = null) {
+	public function touch(string $path, ?int $mtime = null): bool {
 		return false;
 	}
 }
 
 class TemporaryNoCross extends Temporary {
-	public function copyFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath, $preserveMtime = null) {
+	public function copyFromStorage(IStorage $sourceStorage, string $sourceInternalPath, string $targetInternalPath, bool $preserveMtime = false): bool {
 		return Common::copyFromStorage($sourceStorage, $sourceInternalPath, $targetInternalPath, $preserveMtime);
 	}
 
-	public function moveFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath) {
+	public function moveFromStorage(IStorage $sourceStorage, string $sourceInternalPath, string $targetInternalPath): bool {
 		return Common::moveFromStorage($sourceStorage, $sourceInternalPath, $targetInternalPath);
 	}
 }
 
 class TemporaryNoLocal extends Temporary {
-	public function instanceOfStorage($className) {
-		if ($className === '\OC\Files\Storage\Local') {
+	public function instanceOfStorage(string $class): bool {
+		if ($class === '\OC\Files\Storage\Local') {
 			return false;
 		} else {
-			return parent::instanceOfStorage($className);
+			return parent::instanceOfStorage($class);
 		}
 	}
 }
@@ -1589,7 +1592,6 @@ class ViewTest extends \Test\TestCase {
 		foreach ($mountPoints as $mountPoint) {
 			$storage = $this->getMockBuilder(Storage::class)
 				->setMethods([])
-				->setConstructorArgs([[]])
 				->getMock();
 			$storage->method('getId')->willReturn('non-null-id');
 			$storage->method('getStorageCache')->willReturnCallback(function () use ($storage) {
@@ -1750,6 +1752,8 @@ class ViewTest extends \Test\TestCase {
 				ILockingProvider::LOCK_SHARED,
 				ILockingProvider::LOCK_EXCLUSIVE,
 				ILockingProvider::LOCK_SHARED,
+				null,
+				0,
 			],
 
 			// ---- delete hook ----
@@ -1781,6 +1785,8 @@ class ViewTest extends \Test\TestCase {
 				ILockingProvider::LOCK_SHARED,
 				ILockingProvider::LOCK_SHARED,
 				null,
+				null,
+				false,
 			],
 			[
 				'fopen',
@@ -1807,8 +1813,28 @@ class ViewTest extends \Test\TestCase {
 			// ---- no hooks, no locks ---
 			['is_dir', ['dir'], 'dir', null],
 			['is_file', ['dir'], 'dir', null],
-			['stat', ['dir'], 'dir', null],
-			['filetype', ['dir'], 'dir', null],
+			[
+				'stat',
+				['dir'],
+				'dir',
+				null,
+				ILockingProvider::LOCK_SHARED,
+				ILockingProvider::LOCK_SHARED,
+				ILockingProvider::LOCK_SHARED,
+				null,
+				false,
+			],
+			[
+				'filetype',
+				['dir'],
+				'dir',
+				null,
+				ILockingProvider::LOCK_SHARED,
+				ILockingProvider::LOCK_SHARED,
+				ILockingProvider::LOCK_SHARED,
+				null,
+				false,
+			],
 			[
 				'filesize',
 				['dir'],
@@ -1827,7 +1853,17 @@ class ViewTest extends \Test\TestCase {
 			['isDeletable', ['dir'], 'dir', null],
 			['isSharable', ['dir'], 'dir', null],
 			['file_exists', ['dir'], 'dir', null],
-			['filemtime', ['dir'], 'dir', null],
+			[
+				'filemtime',
+				['dir'],
+				'dir',
+				null,
+				ILockingProvider::LOCK_SHARED,
+				ILockingProvider::LOCK_SHARED,
+				ILockingProvider::LOCK_SHARED,
+				null,
+				false,
+			],
 		];
 	}
 
@@ -1859,10 +1895,13 @@ class ViewTest extends \Test\TestCase {
 	): void {
 		$view = new View('/' . $this->user . '/files/');
 
-		/** @var Temporary|\PHPUnit\Framework\MockObject\MockObject $storage */
+		/** @var Temporary&MockObject $storage */
 		$storage = $this->getMockBuilder(Temporary::class)
 			->setMethods([$operation])
 			->getMock();
+
+		/* Pause trash to avoid the trashbin intercepting rmdir and unlink calls */
+		Server::get(ITrashManager::class)->pauseTrash();
 
 		Filesystem::mount($storage, [], $this->user . '/');
 
@@ -1899,6 +1938,9 @@ class ViewTest extends \Test\TestCase {
 		}
 
 		$this->assertEquals($expectedStrayLock, $this->getFileLockType($view, $lockedPath));
+
+		/* Resume trash to avoid side effects */
+		Server::get(ITrashManager::class)->resumeTrash();
 	}
 
 	/**
@@ -1996,7 +2038,7 @@ class ViewTest extends \Test\TestCase {
 	public function testLockBasicOperationUnlocksAfterException(
 		$operation,
 		$operationArgs,
-		$path
+		$path,
 	): void {
 		if ($operation === 'touch') {
 			$this->markTestSkipped('touch handles storage exceptions internally');
@@ -2007,6 +2049,9 @@ class ViewTest extends \Test\TestCase {
 		$storage = $this->getMockBuilder(Temporary::class)
 			->setMethods([$operation])
 			->getMock();
+
+		/* Pause trash to avoid the trashbin intercepting rmdir and unlink calls */
+		Server::get(ITrashManager::class)->pauseTrash();
 
 		Filesystem::mount($storage, [], $this->user . '/');
 
@@ -2034,6 +2079,9 @@ class ViewTest extends \Test\TestCase {
 		}
 		$this->assertTrue($thrown, 'Exception was rethrown');
 		$this->assertNull($this->getFileLockType($view, $path), 'File got unlocked after exception');
+
+		/* Resume trash to avoid side effects */
+		Server::get(ITrashManager::class)->resumeTrash();
 	}
 
 	public function testLockBasicOperationUnlocksAfterLockException(): void {
@@ -2081,7 +2129,7 @@ class ViewTest extends \Test\TestCase {
 		$operation,
 		$operationArgs,
 		$path,
-		$hookType
+		$hookType,
 	): void {
 		$view = new View('/' . $this->user . '/files/');
 

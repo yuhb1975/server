@@ -124,8 +124,6 @@
     "Default phone region" : "Sjálfgefið svæði símaþjónustu",
     "Email test" : "Prófa tölvupóststillingar",
     "Email test was successfully sent" : "Það tókst að senda tölvupóstprófun",
-    "File locking" : "Skráalæsing",
-    "Transactional file locking is disabled, this might lead to issues with race conditions. Enable \"filelocking.enabled\" in config.php to avoid these problems." : "Færslulæsing skráa (transactional file locking) er óvirk, þetta gæti leitt til vandamála út frá forgangsskilyrðum (race conditions). Virkjaðu 'filelocking.enabled' í config.php til að forðast slík vandamál.",
     "The database is used for transactional file locking. To enhance performance, please configure memcache, if available." : "Gagnagrunnurinn er notaður fyrir færslulæsingu skráa. Til að auka afköst ættirðu að setja upp skyndiminni (með memcache) ef það er tiltækt.",
     "The reverse proxy header configuration is incorrect. This is a security issue and can allow an attacker to spoof their IP address as visible to the Nextcloud." : "Uppsetning gagnstæðs milliþjónshauss (reverse proxy header) er röng. Þetta er öryggisvandamál og getur leyft árásaraðilum að dulbúa IP-vistfang þeirra sem sýnilegt fyrir Nextcloud.",
     "Your IP address was resolved as %s" : "IP-vistfangið þitt var leyst sem %s",
@@ -452,12 +450,12 @@
     "About" : "Um hugbúnaðinn",
     "Full name" : "Fullt nafn",
     "Additional email" : "Aukatölvupóstfang",
+    "Fediverse (e.g. Mastodon)" : "Skýjasamband - Fediverse (t.d. Mastodon)",
     "Headline" : "Fyrirsögn",
     "Organisation" : "Stofnun/Félag/Fyrirtæki",
     "Phone number" : "Símanúmer",
     "Role" : "Role",
     "X (formerly Twitter)" : "X (fyrrum Twitter)",
-    "Fediverse (e.g. Mastodon)" : "Skýjasamband - Fediverse (t.d. Mastodon)",
     "Website" : "Vefsvæði",
     "Profile visibility" : "Sýnileiki notandasniðs",
     "Locale" : "Staðfærsla",
@@ -518,7 +516,6 @@
     "Reasons to use Nextcloud in your organization" : "Ástæður til að nota Nextcloud á vinnustaðnum þínum",
     "Developed by the {communityopen}Nextcloud community{linkclose}, the {githubopen}source code{linkclose} is licensed under the {licenseopen}AGPL{linkclose}." : "Þróað af {communityopen}Nextcloud samfélaginu{linkclose}, {githubopen}grunnkóðinn{linkclose} er gefinn út með {licenseopen}AGPL{linkclose} notkunarleyfinu.",
     "Like our Facebook page" : "Líkaðu við Facebook-síðuna okkar",
-    "Follow us on Twitter" : "Fylgstu með okkur á Twitter",
     "Follow us on Mastodon" : "Fylgstu með okkur á Mastodon",
     "Check out our blog" : "Kíktu á bloggið okkar",
     "Subscribe to our newsletter" : "Gerstu áskrifandi að fréttabréfinu okkar",
@@ -535,6 +532,8 @@
     "Old user imported certificates" : "Gömul skilríki sem notandi hefur flutt inn",
     "Missing optional index \"%s\" in table \"%s\"." : "Vantar valkvæða vísinn \"s\" í töflunni \"%s\".",
     "The database is missing some indexes. Due to the fact that adding indexes on big tables could take some time they were not added automatically. By running \"occ db:add-missing-indices\" those missing indexes could be added manually while the instance keeps running. Once the indexes are added queries to those tables are usually much faster." : "Gagnagrunninn vantar nokkra atriðavísa (indexes). Vegna þess að það að bæta atriðavísum við stórar töflur getur tekið töluverðan tíma, þá var þeim ekki bætt við sjálfvirkt. Með því að keyra \"occ db:add-missing-indices\" væri hægt að bæta inn þessum atriðavísum sem vantar, á meðan kerfið er í gangi. Um leið og búið er að bæta inn þessum atriðavísum, munu fyrirspurnir í þessar töflur verða miklu hraðvirkari.",
+    "File locking" : "Skráalæsing",
+    "Transactional file locking is disabled, this might lead to issues with race conditions. Enable \"filelocking.enabled\" in config.php to avoid these problems." : "Færslulæsing skráa (transactional file locking) er óvirk, þetta gæti leitt til vandamála út frá forgangsskilyrðum (race conditions). Virkjaðu 'filelocking.enabled' í config.php til að forðast slík vandamál.",
     "Speech-To-Text" : "Tal-í-texta",
     "Exclude groups from sharing" : "Undanskilja hópa frá því að deila",
     "These groups will still be able to receive shares, but not to initiate them." : "Þessir hópar munu samt geta tekið við deildum sameignum, en ekki geta útbúið þær.",
@@ -590,6 +589,7 @@
     "Not available as publishing user specific data to the lookup server is not allowed, contact your system administrator if you have any questions" : "Er ekki tiltækt þar sem ekki er leyfilegt að miðla sértækum gögnum notenda yfir á uppflettingaþjóninn, hafðu samband við kerfisstjórann þinn ef þú ert með einhverjar spurningar",
     "Show to logged in users only" : "Birta einungis innskráðum notendum",
     "Nextcloud help resources" : "Aðstoðartilföng Nextcloud",
-    "SMTP Username" : "SMTP-notandanafn"
+    "SMTP Username" : "SMTP-notandanafn",
+    "Follow us on Twitter" : "Fylgstu með okkur á Twitter"
 },"pluralForm" :"nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);"
 }

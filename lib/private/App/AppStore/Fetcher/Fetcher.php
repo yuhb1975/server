@@ -13,6 +13,8 @@ use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
 use OCP\Http\Client\IClientService;
 use OCP\IConfig;
+use OCP\Server;
+use OCP\ServerVersion;
 use OCP\Support\Subscription\IRegistry;
 use Psr\Log\LoggerInterface;
 
@@ -121,6 +123,7 @@ abstract class Fetcher {
 		$isDefaultAppStore = $this->config->getSystemValueString('appstoreurl', self::APP_STORE_URL) === self::APP_STORE_URL;
 
 		if (!$appstoreenabled || (!$internetavailable && $isDefaultAppStore)) {
+			$this->logger->info('AppStore is disabled or this instance has no Internet connection to access the default app store', ['app' => 'appstoreFetcher']);
 			return [];
 		}
 
@@ -206,7 +209,7 @@ abstract class Fetcher {
 	 */
 	protected function getChannel() {
 		if ($this->channel === null) {
-			$this->channel = \OC_Util::getChannel();
+			$this->channel = Server::get(ServerVersion::class)->getChannel();
 		}
 		return $this->channel;
 	}

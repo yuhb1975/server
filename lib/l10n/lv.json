@@ -1,6 +1,7 @@
 { "translations": {
     "Cannot write into \"config\" directory!" : "Nevar rakstīt \"config\" mapē!",
     "See %s" : "Skatīt %s",
+    "Application %1$s is not present or has a non-compatible version with this server. Please check the apps directory." : "Lietotne %1$s nav pieejama vai tai ir ar šo serveri nesaderīga versija. Lūgums pārbaudīt lietotņu mapi.",
     "Sample configuration detected" : "Atrasta konfigurācijas paraugs",
     "It has been detected that the sample configuration has been copied. This can break your installation and is unsupported. Please read the documentation before performing changes on config.php" : "Konstatēts, ka paraug konfigurācija ir nokopēta. Tas var izjaukt jūsu instalāciju un nav atbalstīts. Lūdzu, izlasiet dokumentāciju, pirms veicat izmaiņas config.php",
     "%s email verification" : "%s e-pasta pārbaude",
@@ -42,7 +43,7 @@
     "Appearance and accessibility" : "Izskats un piekļūstamība",
     "Apps" : "Lietotnes",
     "Personal settings" : "Personiskie iestatījumi",
-    "Administration settings" : "Administrēšanas iestatījumi",
+    "Administration settings" : "Pārvaldīšanas iestatījumi",
     "Settings" : "Iestatījumi",
     "Log out" : "Izrakstīties",
     "Accounts" : "Konti",
@@ -53,6 +54,7 @@
     "Address" : "Adrese",
     "Profile picture" : "Profila attēls",
     "About" : "Par",
+    "Display name" : "Attēlojamais vārds",
     "Additional settings" : "Papildu iestatījumi",
     "Oracle connection could not be established" : "Nevar izveidot savienojumu ar Oracle",
     "Set an admin password." : "Iestatiet administratora paroli.",
@@ -108,7 +110,6 @@
     "A valid password must be provided" : "Jānorāda derīga parole",
     "Login canceled by app" : "Pieteikšanos atcelā lietotne",
     "a safe home for all your data" : "droša vieta visiem Taviem datiem",
-    "File is currently busy, please try again later" : "Datne pašlaik ir aizņemta. Lūdzu, vēlāk mēģiniet vēlreiz",
     "Application is not enabled" : "Lietotne nav iespējota",
     "Authentication error" : "Autentifikācijas kļūda",
     "Token expired. Please reload page." : "Pilnvarai ir beidzies termiņš. Lūdzu, pārlādējiet lapu.",
@@ -134,6 +135,7 @@
     "Set an admin username." : "Iestatiet administratora lietotājvārdu.",
     "The username is already being used" : "Šāds lietotājvārds jau tiek izmantots",
     "A valid username must be provided" : "Jānorāda derīgs lietotājvārds",
-    "User disabled" : "Lietotājs deaktivizēts"
+    "User disabled" : "Lietotājs deaktivizēts",
+    "File is currently busy, please try again later" : "Datne pašlaik ir aizņemta. Lūdzu, vēlāk mēģiniet vēlreiz"
 },"pluralForm" :"nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);"
 }

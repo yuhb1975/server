@@ -238,7 +238,7 @@ class Manager implements IManager {
 		array $checkIds,
 		string $operation,
 		string $entity,
-		array $events
+		array $events,
 	): int {
 		$query = $this->connection->getQueryBuilder();
 		$query->insert('flow_operations')
@@ -264,7 +264,7 @@ class Manager implements IManager {
 	 * @param string $operation
 	 * @return array The added operation
 	 * @throws \UnexpectedValueException
-	 * @throw Exception
+	 * @throws Exception
 	 */
 	public function addOperation(
 		string $class,
@@ -273,7 +273,7 @@ class Manager implements IManager {
 		string $operation,
 		ScopeContext $scope,
 		string $entity,
-		array $events
+		array $events,
 	) {
 		$this->validateOperation($class, $name, $checks, $operation, $scope, $entity, $events);
 
@@ -342,7 +342,7 @@ class Manager implements IManager {
 		string $operation,
 		ScopeContext $scopeContext,
 		string $entity,
-		array $events
+		array $events,
 	): array {
 		if (!$this->canModify($id, $scopeContext)) {
 			throw new \DomainException('Target operation not within scope');

@@ -106,7 +106,7 @@ class FilesReportPlugin extends ServerPlugin {
 		IUserSession $userSession,
 		IGroupManager $groupManager,
 		Folder $userFolder,
-		IAppManager $appManager
+		IAppManager $appManager,
 	) {
 		$this->tree = $tree;
 		$this->fileView = $view;
@@ -410,7 +410,7 @@ class FilesReportPlugin extends ServerPlugin {
 
 		$results = [];
 		foreach ($fileIds as $fileId) {
-			$entry = $folder->getFirstNodeById($fileId);
+			$entry = $folder->getFirstNodeById((int)$fileId);
 			if ($entry) {
 				$results[] = $this->wrapNode($entry);
 			}

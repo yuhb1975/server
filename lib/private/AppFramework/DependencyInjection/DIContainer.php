@@ -39,7 +39,6 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IInitialStateService;
 use OCP\IL10N;
-use OCP\ILogger;
 use OCP\INavigationManager;
 use OCP\IRequest;
 use OCP\IServerContainer;
@@ -87,11 +86,11 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 		$this->server->registerAppContainer($appName, $this);
 
 		// aliases
-		/** @deprecated inject $appName */
+		/** @deprecated 26.0.0 inject $appName */
 		$this->registerAlias('AppName', 'appName');
-		/** @deprecated inject $webRoot*/
+		/** @deprecated 26.0.0 inject $webRoot*/
 		$this->registerAlias('WebRoot', 'webRoot');
-		/** @deprecated inject $userId */
+		/** @deprecated 26.0.0 inject $userId */
 		$this->registerAlias('UserId', 'userId');
 
 		/**
@@ -119,9 +118,6 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 				$c->get(PsrLoggerAdapter::class),
 				$c->get('AppName')
 			);
-		});
-		$this->registerService(ILogger::class, function (ContainerInterface $c) {
-			return new OC\AppFramework\Logger($this->server->query(ILogger::class), $c->get('AppName'));
 		});
 
 		$this->registerService(IServerContainer::class, function () {
@@ -363,7 +359,7 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 	}
 
 	/**
-	 * @deprecated use IUserSession->isLoggedIn()
+	 * @deprecated 12.0.0 use IUserSession->isLoggedIn()
 	 * @return boolean
 	 */
 	public function isLoggedIn() {
@@ -371,7 +367,7 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 	}
 
 	/**
-	 * @deprecated use IGroupManager->isAdmin($userId)
+	 * @deprecated 12.0.0 use IGroupManager->isAdmin($userId)
 	 * @return boolean
 	 */
 	public function isAdminUser() {

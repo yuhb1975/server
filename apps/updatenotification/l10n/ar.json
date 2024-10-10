@@ -1,5 +1,4 @@
 { "translations": {
-    "{version} is available. Get more information on how to update." : "الإصدار {version} متوفر. أحصُل على معلومات عن كيفية التحديث.",
     "Channel updated" : "تمّ تحديث القناة",
     "Web updater is disabled" : "مُحدِّث الوب موقوف",
     "App updated" : "تمّ تحديث التطبيق",
@@ -7,7 +6,7 @@
     "{app} updated to version {version}" : "تمّ تحديث التطبيق {app} إلى الإصدار {version}",
     "Update notifications" : "إشعارات التحديث",
     "The update server could not be reached since %d days to check for new updates." : "تعذر الوصول إلى خادم التحديث للتحقق من وجود تحديثات جديدة منذ %d أيام.",
-    "Please check the Nextcloud and server log files for errors." : "يرجى التحقق من نكست كلاود و سجل حركات الخادوم log بحثًا عن الأخطاء.",
+    "Please check the Nextcloud and server log files for errors." : "يرجى التحقق من نكست كلاود و سجل حركات الخادم log بحثًا عن الأخطاء.",
     "Update to {serverAndVersion} is available." : "تحديث الـ {serverAndVersion} متوفّر.",
     "Update for {app} to version %s is available." : "التحديث ل {app} نسخة رقم %s متوفر.",
     "Update notification" : "إشعار التحديث",
@@ -55,6 +54,7 @@
     "_<strong>%n</strong> app has no compatible version for this Nextcloud version available._::_<strong>%n</strong> apps have no compatible version for this Nextcloud version available._" : ["<strong>%n</strong> من التطبيقات ليس لها إصدار متوافق مع إصدار نكست كلود المتاح.","<strong>%n</strong>تطبيق  ليس له إصدار متوافق مع إصدار نكست كلود المتاح.","<strong>%n</strong> من التطبيقات ليس لها إصدار متوافق مع إصدار نكست كلود المتاح.","<strong>%n</strong> من التطبيقات ليس لها إصدار متوافق مع إصدار نكست كلود المتاح.","<strong>%n</strong> من التطبيقات ليس لها إصدار متوافق مع إصدار نكست كلود المتاح.","<strong>%n</strong> من التطبيقات ليس لها إصدار متوافق مع إصدار نكست كلود المتاح."],
     "Changelog for app {app}" : "سجل التغييرات للتطبيق {app}",
     "What's new in {app} version {version}" : "ما الجديد في الإصدار {version} من التطبيق {app}",
+    "{version} is available. Get more information on how to update." : "الإصدار {version} متوفر. أحصُل على معلومات عن كيفية التحديث.",
     "Update to %1$s is available." : "التحديثات متوفرة حتى الإصدار %1$s.",
     "Displays update notifications for Nextcloud and provides the SSO for the updater." : "يعرض إشعارات التحديث لـ Nextcloud ويوفر SSO للمُحدِّث.",
     "Please note that the web updater is not recommended with more than 100 users! Please use the command line updater instead!" : "لاحظ رجاءً أن مُحدّث الوب لا يُنصح به في حالة كان عدد مستخدميك أكثر من 100 شخص! استخدم المُحدّث عن طريق سطر الأوامر بدلاً عنه!",

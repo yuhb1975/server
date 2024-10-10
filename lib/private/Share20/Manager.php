@@ -54,7 +54,7 @@ use Psr\Log\LoggerInterface;
  */
 class Manager implements IManager {
 
-	private IL10N|null $l;
+	private ?IL10N $l;
 	private LegacyHooks $legacyHooks;
 
 	public function __construct(
@@ -75,7 +75,7 @@ class Manager implements IManager {
 		private IUserSession $userSession,
 		private KnownUserService $knownUserService,
 		private ShareDisableChecker $shareDisableChecker,
-		private IDateTimeZone $dateTimeZone
+		private IDateTimeZone $dateTimeZone,
 	) {
 		$this->l = $this->l10nFactory->get('lib');
 		// The constructor of LegacyHooks registers the listeners of share events
@@ -130,34 +130,34 @@ class Manager implements IManager {
 		if ($share->getShareType() === IShare::TYPE_USER) {
 			// We expect a valid user as sharedWith for user shares
 			if (!$this->userManager->userExists($share->getSharedWith())) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith is not a valid user'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient is not a valid user'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_GROUP) {
 			// We expect a valid group as sharedWith for group shares
 			if (!$this->groupManager->groupExists($share->getSharedWith())) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith is not a valid group'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient is not a valid group'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_LINK) {
 			// No check for TYPE_EMAIL here as we have a recipient for them
 			if ($share->getSharedWith() !== null) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith should be empty'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient should be empty'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_EMAIL) {
 			if ($share->getSharedWith() === null) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith should not be empty'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient should not be empty'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_REMOTE) {
 			if ($share->getSharedWith() === null) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith should not be empty'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient should not be empty'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_REMOTE_GROUP) {
 			if ($share->getSharedWith() === null) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith should not be empty'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient should not be empty'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_CIRCLE) {
 			$circle = \OCA\Circles\Api\v1\Circles::detailsCircle($share->getSharedWith());
 			if ($circle === null) {
-				throw new \InvalidArgumentException($this->l->t('SharedWith is not a valid circle'));
+				throw new \InvalidArgumentException($this->l->t('Share recipient is not a valid circle'));
 			}
 		} elseif ($share->getShareType() === IShare::TYPE_ROOM) {
 		} elseif ($share->getShareType() === IShare::TYPE_DECK) {
@@ -169,7 +169,7 @@ class Manager implements IManager {
 
 		// Verify the initiator of the share is set
 		if ($share->getSharedBy() === null) {
-			throw new \InvalidArgumentException($this->l->t('SharedBy should be set'));
+			throw new \InvalidArgumentException($this->l->t('Share initiator must be set'));
 		}
 
 		// Cannot share with yourself
@@ -180,13 +180,13 @@ class Manager implements IManager {
 
 		// The path should be set
 		if ($share->getNode() === null) {
-			throw new \InvalidArgumentException($this->l->t('Path should be set'));
+			throw new \InvalidArgumentException($this->l->t('Shared path must be set'));
 		}
 
 		// And it should be a file or a folder
 		if (!($share->getNode() instanceof \OCP\Files\File) &&
 			!($share->getNode() instanceof \OCP\Files\Folder)) {
-			throw new \InvalidArgumentException($this->l->t('Path should be either a file or a folder'));
+			throw new \InvalidArgumentException($this->l->t('Shared path must be either a file or a folder'));
 		}
 
 		// And you cannot share your rootfolder
@@ -206,7 +206,7 @@ class Manager implements IManager {
 
 		// Permissions should be set
 		if ($share->getPermissions() === null) {
-			throw new \InvalidArgumentException($this->l->t('A share requires permissions'));
+			throw new \InvalidArgumentException($this->l->t('Valid permissions are required for sharing'));
 		}
 
 		$permissions = 0;
@@ -226,7 +226,6 @@ class Manager implements IManager {
 			$path = $userFolder->getRelativePath($share->getNode()->getPath());
 			throw new GenericShareException($this->l->t('Cannot increase permissions of %s', [$path]), code: 404);
 		}
-
 
 		// Check that read permissions are always set
 		// Link shares are allowed to have no read permissions to allow upload to hidden folders
@@ -657,13 +656,43 @@ class Manager implements IManager {
 				$this->linkCreateChecks($share);
 				$this->setLinkParent($share);
 
-				// For now ignore a set token.
-				$share->setToken(
-					$this->secureRandom->generate(
-						\OC\Share\Constants::TOKEN_LENGTH,
-						\OCP\Security\ISecureRandom::CHAR_HUMAN_READABLE
-					)
-				);
+				// Initial token length
+				$tokenLength = \OC\Share\Helper::getTokenLength();
+
+				do {
+					$tokenExists = false;
+
+					for ($i = 0; $i <= 2; $i++) {
+						// Generate a new token
+						$token = $this->secureRandom->generate(
+							$tokenLength,
+							\OCP\Security\ISecureRandom::CHAR_HUMAN_READABLE
+						);
+
+						try {
+							// Try to fetch a share with the generated token
+							$this->getShareByToken($token);
+							$tokenExists = true; // Token exists, we need to try again
+						} catch (\OCP\Share\Exceptions\ShareNotFound $e) {
+							// Token is unique, exit the loop
+							$tokenExists = false;
+							break;
+						}
+					}
+
+					// If we've reached the maximum attempts and the token still exists, increase the token length
+					if ($tokenExists) {
+						$tokenLength++;
+
+						// Check if the token length exceeds the maximum allowed length
+						if ($tokenLength > \OC\Share\Constants::MAX_TOKEN_LENGTH) {
+							throw new \Exception('Unable to generate a unique share token. Maximum token length exceeded.');
+						}
+					}
+				} while ($tokenExists);
+
+				// Set the unique token
+				$share->setToken($token);
 
 				// Verify the expiration date
 				$share = $this->validateExpirationDateLink($share);
@@ -1072,7 +1101,7 @@ class Manager implements IManager {
 		}
 
 		if ($share->getShareType() === IShare::TYPE_USER && $share->getSharedWith() !== $recipientId) {
-			throw new \InvalidArgumentException($this->l->t('Invalid recipient'));
+			throw new \InvalidArgumentException($this->l->t('Invalid share recipient'));
 		}
 
 		if ($share->getShareType() === IShare::TYPE_GROUP) {
@@ -1082,7 +1111,7 @@ class Manager implements IManager {
 			}
 			$recipient = $this->userManager->get($recipientId);
 			if (!$sharedWith->inGroup($recipient)) {
-				throw new \InvalidArgumentException($this->l->t('Invalid recipient'));
+				throw new \InvalidArgumentException($this->l->t('Invalid share recipient'));
 			}
 		}
 

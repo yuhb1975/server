@@ -8,10 +8,12 @@
 namespace Test\Repair;
 
 use OC\Files\Storage\Temporary;
+use OC\Repair\RepairMimeTypes;
 use OCP\Files\IMimeTypeLoader;
+use OCP\IAppConfig;
 use OCP\IConfig;
+use OCP\IDBConnection;
 use OCP\Migration\IOutput;
-use OCP\Migration\IRepairStep;
 
 /**
  * Tests for the converting of legacy storages to home storages.
@@ -21,43 +23,49 @@ use OCP\Migration\IRepairStep;
  * @see \OC\Repair\RepairMimeTypes
  */
 class RepairMimeTypesTest extends \Test\TestCase {
-	/** @var IRepairStep */
-	private $repair;
 
-	/** @var Temporary */
-	private $storage;
-
-	/** @var IMimeTypeLoader */
-	private $mimetypeLoader;
+	private RepairMimeTypes $repair;
+	private Temporary $storage;
+	private IMimeTypeLoader $mimetypeLoader;
+	private IDBConnection $db;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->mimetypeLoader = \OC::$server->getMimeTypeLoader();
+		$this->mimetypeLoader = \OCP\Server::get(IMimeTypeLoader::class);
+		$this->db = \OCP\Server::get(IDBConnection::class);
 
-		/** @var IConfig | \PHPUnit\Framework\MockObject\MockObject $config */
 		$config = $this->getMockBuilder(IConfig::class)
 			->disableOriginalConstructor()
 			->getMock();
 		$config->method('getSystemValueString')
 			->with('version')
 			->willReturn('11.0.0.0');
-		$config->method('getAppValue')
+
+		$appConfig = $this->getMockBuilder(IAppConfig::class)
+			->disableOriginalConstructor()
+			->getMock();
+		$appConfig->method('getValueString')
 			->with('files', 'mimetype_version')
 			->willReturn('11.0.0.0');
 
-		$this->storage = new \OC\Files\Storage\Temporary([]);
+		$this->storage = new Temporary([]);
+		$this->storage->getScanner()->scan('');
 
-		$this->repair = new \OC\Repair\RepairMimeTypes($config, \OC::$server->getDatabaseConnection());
+		$this->repair = new RepairMimeTypes(
+			$config,
+			$appConfig,
+			\OCP\Server::get(IDBConnection::class),
+		);
 	}
 
 	protected function tearDown(): void {
 		$this->storage->getCache()->clear();
 
-		$qb = \OC::$server->getDatabaseConnection()->getQueryBuilder();
+		$qb = $this->db->getQueryBuilder();
 		$qb->delete('storages')
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($this->storage->getId())));
-		$qb->execute();
+		$qb->executeStatement();
 
 		$this->clearMimeTypes();
 
@@ -65,9 +73,9 @@ class RepairMimeTypesTest extends \Test\TestCase {
 	}
 
 	private function clearMimeTypes() {
-		$qb = \OC::$server->getDatabaseConnection()->getQueryBuilder();
+		$qb = $this->db->getQueryBuilder();
 		$qb->delete('mimetypes');
-		$qb->execute();
+		$qb->executeStatement();
 
 		$this->mimetypeLoader->reset();
 	}

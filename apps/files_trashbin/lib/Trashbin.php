@@ -11,11 +11,8 @@ use OC\Files\Cache\Cache;
 use OC\Files\Cache\CacheEntry;
 use OC\Files\Cache\CacheQueryBuilder;
 use OC\Files\Filesystem;
-use OC\Files\Node\File;
-use OC\Files\Node\Folder;
 use OC\Files\Node\NonExistingFile;
 use OC\Files\Node\NonExistingFolder;
-use OC\Files\ObjectStore\ObjectStoreStorage;
 use OC\Files\View;
 use OC_User;
 use OCA\Files_Trashbin\AppInfo\Application;
@@ -24,11 +21,18 @@ use OCA\Files_Trashbin\Events\BeforeNodeRestoredEvent;
 use OCA\Files_Trashbin\Events\NodeRestoredEvent;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\EventDispatcher\IEventListener;
+use OCP\Files\Events\Node\BeforeNodeDeletedEvent;
+use OCP\Files\File;
+use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
+use OCP\Files\Storage\ILockingStorage;
+use OCP\Files\Storage\IStorage;
 use OCP\FilesMetadata\IFilesMetadataManager;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -37,21 +41,20 @@ use OCP\Lock\LockedException;
 use OCP\Server;
 use Psr\Log\LoggerInterface;
 
-class Trashbin {
+/** @template-implements IEventListener<BeforeNodeDeletedEvent> */
+class Trashbin implements IEventListener {
 	// unit: percentage; 50% of available disk space/quota
 	public const DEFAULTMAXSIZE = 50;
 
 	/**
 	 * Ensure we don't need to scan the file during the move to trash
 	 * by triggering the scan in the pre-hook
-	 *
-	 * @param array $params
 	 */
-	public static function ensureFileScannedHook($params) {
+	public static function ensureFileScannedHook(Node $node): void {
 		try {
-			self::getUidAndFilename($params['path']);
+			self::getUidAndFilename($node->getPath());
 		} catch (NotFoundException $e) {
-			// nothing to scan for non existing files
+			// Nothing to scan for non existing files
 		}
 	}
 
@@ -118,7 +121,7 @@ class Trashbin {
 	 * @param string $user
 	 * @param string $filename
 	 * @param string $timestamp
-	 * @return string original location
+	 * @return string|false original location
 	 */
 	public static function getLocation($user, $filename, $timestamp) {
 		$query = \OC::$server->getDatabaseConnection()->getQueryBuilder();
@@ -139,7 +142,8 @@ class Trashbin {
 		}
 	}
 
-	private static function setUpTrash($user) {
+	/** @param string $user */
+	private static function setUpTrash($user): void {
 		$view = new View('/' . $user);
 		if (!$view->is_dir('files_trashbin')) {
 			$view->mkdir('files_trashbin');
@@ -162,10 +166,10 @@ class Trashbin {
 	 * @param string $sourcePath
 	 * @param string $owner
 	 * @param string $targetPath
-	 * @param $user
+	 * @param string $user
 	 * @param int $timestamp
 	 */
-	private static function copyFilesToUser($sourcePath, $owner, $targetPath, $user, $timestamp) {
+	private static function copyFilesToUser($sourcePath, $owner, $targetPath, $user, $timestamp): void {
 		self::setUpTrash($owner);
 
 		$targetFilename = basename($targetPath);
@@ -254,11 +258,10 @@ class Trashbin {
 		$trashPath = '/files_trashbin/files/' . static::getTrashFilename($filename, $timestamp);
 		$gotLock = false;
 
-		while (!$gotLock) {
+		do {
+			/** @var ILockingStorage & IStorage $trashStorage */
+			[$trashStorage, $trashInternalPath] = $ownerView->resolvePath($trashPath);
 			try {
-				/** @var \OC\Files\Storage\Storage $trashStorage */
-				[$trashStorage, $trashInternalPath] = $ownerView->resolvePath($trashPath);
-
 				$trashStorage->acquireLock($trashInternalPath, ILockingProvider::LOCK_EXCLUSIVE, $lockingProvider);
 				$gotLock = true;
 			} catch (LockedException $e) {
@@ -269,7 +272,7 @@ class Trashbin {
 
 				$trashPath = '/files_trashbin/files/' . static::getTrashFilename($filename, $timestamp);
 			}
-		}
+		} while (!$gotLock);
 
 		$sourceStorage = $sourceInfo->getStorage();
 		$sourceInternalPath = $sourceInfo->getInternalPath();
@@ -283,14 +286,12 @@ class Trashbin {
 			return false;
 		}
 
-		$trashStorage->getUpdater()->renameFromStorage($sourceStorage, $sourceInternalPath, $trashInternalPath);
-
 		try {
 			$moveSuccessful = true;
 
-			// when moving within the same object store, the cache update done above is enough to move the file
-			if (!($trashStorage->instanceOfStorage(ObjectStoreStorage::class) && $trashStorage->getId() === $sourceStorage->getId())) {
-				$trashStorage->moveFromStorage($sourceStorage, $sourceInternalPath, $trashInternalPath);
+			$trashStorage->moveFromStorage($sourceStorage, $sourceInternalPath, $trashInternalPath);
+			if ($sourceStorage->getCache()->inCache($sourceInternalPath)) {
+				$trashStorage->getUpdater()->renameFromStorage($sourceStorage, $sourceInternalPath, $trashInternalPath);
 			}
 		} catch (\OCA\Files_Trashbin\Exceptions\CopyRecursiveException $e) {
 			$moveSuccessful = false;
@@ -988,7 +989,7 @@ class Trashbin {
 			Server::get(IDBConnection::class)->getQueryBuilder(),
 			Server::get(IFilesMetadataManager::class),
 		);
-		$normalizedParentPath = ltrim(Filesystem::normalizePath(dirname('files_trashbin/versions/'. $filename)), '/');
+		$normalizedParentPath = ltrim(Filesystem::normalizePath(dirname('files_trashbin/versions/' . $filename)), '/');
 		$parentId = $cache->getId($normalizedParentPath);
 		if ($parentId === -1) {
 			return [];
@@ -1169,6 +1170,12 @@ class Trashbin {
 			return new NonExistingFolder($rootFolder, $view, $fullPath);
 		} else {
 			return new NonExistingFile($rootFolder, $view, $fullPath);
+		}
+	}
+
+	public function handle(Event $event): void {
+		if ($event instanceof BeforeNodeDeletedEvent) {
+			self::ensureFileScannedHook($event->getNode());
 		}
 	}
 }

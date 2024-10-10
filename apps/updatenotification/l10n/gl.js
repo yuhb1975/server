@@ -1,7 +1,6 @@
 OC.L10N.register(
     "updatenotification",
     {
-    "{version} is available. Get more information on how to update." : "{version} está dispoñíbel. Obteña máis información sobre como actualizar.",
     "Channel updated" : "Canle actualizada",
     "Web updater is disabled" : "O actualizador web está desactivado",
     "App updated" : "Aplicación actualizada",
@@ -33,7 +32,7 @@ OC.L10N.register(
     "Your version is up to date." : "A súa versión está actualizada.",
     "A non-default update server is in use to be checked for updates:" : "Está en uso un servidor de actualizacións que non é o predeterminado para comprobar as actualizacións:",
     "Update channel" : "Canle de actualización:",
-    "Changing the update channel also affects the apps management page. E.g. after switching to the beta channel, beta app updates will be offered to you in the apps management page." : "Cambiar a canle de actualización tamén afecta á páxina de xestión de aplicacións. p.ex. após cambiar á canle beta, ofreceranse actualizacións da aplicación beta na páxina de xestión de aplicacións.",
+    "Changing the update channel also affects the apps management page. E.g. after switching to the beta channel, beta app updates will be offered to you in the apps management page." : "Cambiar a canle de actualización tamén afecta á páxina de xestión de aplicacións. p. ex. após cambiar á canle beta, ofreceranse actualizacións da aplicación beta na páxina de xestión de aplicacións.",
     "Current update channel:" : "Canle de actualización actual:",
     "You can always update to a newer version. But you can never downgrade to a more stable version." : "Sempre poderá actualizar á versión más recente, mais nunca poderá reverter a unha canle máis estábel.",
     "Notify members of the following groups about available updates:" : "Notificar aos membros dos seguintes grupos sobre actualizacións dispoñíbeis:",
@@ -57,6 +56,7 @@ OC.L10N.register(
     "_<strong>%n</strong> app has no compatible version for this Nextcloud version available._::_<strong>%n</strong> apps have no compatible version for this Nextcloud version available._" : ["<strong>%n</strong> aplicación non ten dispoñíbel unha versión compatíbel para esta versión de Nextcloud.","<strong>%n</strong> aplicacións non teñen dispoñíbel unha versión compatíbel para esta versión de Nextcloud."],
     "Changelog for app {app}" : "Notas da versión para a aplicación {app}",
     "What's new in {app} version {version}" : "Novidades en {app} versión {version}",
+    "{version} is available. Get more information on how to update." : "{version} está dispoñíbel. Obteña máis información sobre como actualizar.",
     "Update to %1$s is available." : "Está dispoñíbel  unha actualización para %1$s.",
     "Displays update notifications for Nextcloud and provides the SSO for the updater." : "Amosa as notificacións de actualizacións para o Nexcloud e fornece o inicio de sesión único (SSO) para o actualizador.",
     "Please note that the web updater is not recommended with more than 100 users! Please use the command line updater instead!" : "Teña en conta que o actualizador web non está recomendado con máis de 100 usuarios! Empregue o actualizador da liña de ordes.",

@@ -61,7 +61,7 @@ class Client implements IClient {
 			$onRedirectFunction = function (
 				\Psr\Http\Message\RequestInterface $request,
 				\Psr\Http\Message\ResponseInterface $response,
-				\Psr\Http\Message\UriInterface $uri
+				\Psr\Http\Message\UriInterface $uri,
 			) use ($options) {
 				$this->preventLocalAddress($uri->__toString(), $options);
 			};
@@ -158,16 +158,17 @@ class Client implements IClient {
 	}
 
 	protected function preventLocalAddress(string $uri, array $options): void {
-		if ($this->isLocalAddressAllowed($options)) {
-			return;
-		}
-
 		$host = parse_url($uri, PHP_URL_HOST);
 		if ($host === false || $host === null) {
 			throw new LocalServerException('Could not detect any host');
 		}
+
+		if ($this->isLocalAddressAllowed($options)) {
+			return;
+		}
+
 		if (!$this->remoteHostValidator->isValid($host)) {
-			throw new LocalServerException('Host "'.$host.'" violates local access rules');
+			throw new LocalServerException('Host "' . $host . '" violates local access rules');
 		}
 	}
 

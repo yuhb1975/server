@@ -416,9 +416,6 @@ class SharedStorageTest extends TestCase {
 		$view = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER2 . '/files');
 		$this->assertTrue($view->file_exists($this->folder));
 
-		/**
-		 * @var \OCP\Files\Storage $sharedStorage
-		 */
 		[$sharedStorage,] = $view->resolvePath($this->folder);
 		$this->assertTrue($sharedStorage->instanceOfStorage('OCA\Files_Sharing\ISharedStorage'));
 
@@ -449,14 +446,12 @@ class SharedStorageTest extends TestCase {
 		$view = new \OC\Files\View('/' . self::TEST_FILES_SHARING_API_USER2 . '/files');
 		$this->assertTrue($view->file_exists($this->folder));
 
-		/**
-		 * @var \OCP\Files\Storage $sharedStorage
-		 */
 		[$sharedStorage,] = $view->resolvePath($this->folder);
 		$this->assertTrue($sharedStorage->instanceOfStorage('OCA\Files_Sharing\ISharedStorage'));
 
 		$sourceStorage = new \OC\Files\Storage\Temporary([]);
 		$sourceStorage->file_put_contents('foo.txt', 'asd');
+		$sourceStorage->getScanner()->scan('');
 
 		$sharedStorage->moveFromStorage($sourceStorage, 'foo.txt', 'bar.txt');
 		$this->assertTrue($sharedStorage->file_exists('bar.txt'));

@@ -41,7 +41,7 @@ class CertificateManagerTest extends \Test\TestCase {
 		$this->registerMount($this->username, $storage, '/' . $this->username . '/');
 
 		\OC_Util::tearDownFS();
-		\OC_User::setUserId('');
+		\OC_User::setUserId($this->username);
 		\OC\Files\Filesystem::tearDown();
 		\OC_Util::setupFS($this->username);
 
@@ -144,7 +144,7 @@ class CertificateManagerTest extends \Test\TestCase {
 	public function testNeedRebundling($CaBundleMtime,
 		$targetBundleMtime,
 		$targetBundleExists,
-		$expected
+		$expected,
 	): void {
 		$view = $this->getMockBuilder(View::class)
 			->disableOriginalConstructor()->getMock();

@@ -40,12 +40,17 @@ class CertificateTest extends \Test\TestCase {
 		$certificate->getIssueDate();
 	}
 
-	
+	public function testOpenSslTrustedCertificateFormat(): void {
+		$trustedCertificate = file_get_contents(__DIR__ . '/../../data/certificates/openSslTrustedCertificate.crt');
+		$certificate = new Certificate($trustedCertificate, 'TrustedCertificate');
+		$this->assertSame('thawte, Inc.', $certificate->getOrganization());
+	}
+
 	public function testCertificateStartingWithFileReference(): void {
 		$this->expectException(\Exception::class);
 		$this->expectExceptionMessage('Certificate could not get parsed.');
 
-		new Certificate('file://'.__DIR__ . '/../../data/certificates/goodCertificate.crt', 'bar');
+		new Certificate('file://' . __DIR__ . '/../../data/certificates/goodCertificate.crt', 'bar');
 	}
 
 	public function testGetName(): void {

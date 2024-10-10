@@ -317,7 +317,7 @@ class ShareControllerTest extends \Test\TestCase {
 		$initialState = [];
 		$this->initialState->expects(self::any())
 			->method('provideInitialState')
-			->willReturnCallback(function ($key, $value) use (&$initialState) {
+			->willReturnCallback(function ($key, $value) use (&$initialState): void {
 				$initialState[$key] = $value;
 			});
 		$expectedInitialState = [
@@ -326,6 +326,7 @@ class ShareControllerTest extends \Test\TestCase {
 			'sharePermissions' => (Constants::PERMISSION_READ | Constants::PERMISSION_UPDATE),
 			'filename' => $filename,
 			'view' => $view,
+			'fileId' => 111,
 		];
 
 		$response = $this->shareController->showShare();
@@ -455,7 +456,7 @@ class ShareControllerTest extends \Test\TestCase {
 		$initialState = [];
 		$this->initialState->expects(self::any())
 			->method('provideInitialState')
-			->willReturnCallback(function ($key, $value) use (&$initialState) {
+			->willReturnCallback(function ($key, $value) use (&$initialState): void {
 				$initialState[$key] = $value;
 			});
 		$expectedInitialState = [

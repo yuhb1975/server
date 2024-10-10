@@ -26,7 +26,7 @@ class Size extends Base {
 	public function __construct(
 		IConfig $config,
 		IUserManager $userManager,
-		IBus $commandBus
+		IBus $commandBus,
 	) {
 		parent::__construct();
 
@@ -103,7 +103,7 @@ class Size extends Base {
 			}
 		} else {
 			$users = [];
-			$this->userManager->callForSeenUsers(function (IUser $user) use (&$users) {
+			$this->userManager->callForSeenUsers(function (IUser $user) use (&$users): void {
 				$users[] = $user->getUID();
 			});
 			$userValues = $this->config->getUserValueForUsers('files_trashbin', 'trashbin_size', $users);

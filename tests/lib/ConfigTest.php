@@ -23,7 +23,7 @@ class ConfigTest extends TestCase {
 		parent::setUp();
 
 		$this->randomTmpDir = \OC::$server->getTempManager()->getTemporaryFolder();
-		$this->configFile = $this->randomTmpDir.'testconfig.php';
+		$this->configFile = $this->randomTmpDir . 'testconfig.php';
 		file_put_contents($this->configFile, self::TESTCONTENT);
 	}
 
@@ -39,6 +39,13 @@ class ConfigTest extends TestCase {
 	public function testGetKeys(): void {
 		$expectedConfig = ['foo', 'beers', 'alcohol_free'];
 		$this->assertSame($expectedConfig, $this->getConfig()->getKeys());
+	}
+
+	public function testGetKeysReturnsEnvironmentKeysIfSet() {
+		$expectedConfig = ['foo', 'beers', 'alcohol_free', 'taste'];
+		putenv('NC_taste=great');
+		$this->assertSame($expectedConfig, $this->getConfig()->getKeys());
+		putenv('NC_taste');
 	}
 
 	public function testGetValue(): void {
@@ -148,7 +155,7 @@ class ConfigTest extends TestCase {
 	public function testConfigMerge(): void {
 		// Create additional config
 		$additionalConfig = '<?php $CONFIG=array("php53"=>"totallyOutdated");';
-		$additionalConfigPath = $this->randomTmpDir.'additionalConfig.testconfig.php';
+		$additionalConfigPath = $this->randomTmpDir . 'additionalConfig.testconfig.php';
 		file_put_contents($additionalConfigPath, $additionalConfig);
 
 		// Reinstantiate the config to force a read-in of the additional configs

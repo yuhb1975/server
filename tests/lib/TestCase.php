@@ -271,6 +271,30 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase {
 		);
 	}
 
+	/**
+	 * Filter methods
+	 *
+	 * Returns all methods of the given class,
+	 * that are public or abstract and not in the ignoreMethods list,
+	 * to be able to fill onlyMethods() with an inverted list.
+	 *
+	 * @param string $className
+	 * @param string[] $filterMethods
+	 * @return string[]
+	 */
+	public function filterClassMethods(string $className, array $filterMethods): array {
+		$class = new \ReflectionClass($className);
+
+		$methods = [];
+		foreach ($class->getMethods() as $method) {
+			if (($method->isPublic() || $method->isAbstract()) && !in_array($method->getName(), $filterMethods, true)) {
+				$methods[] = $method->getName();
+			}
+		}
+
+		return $methods;
+	}
+
 	public static function tearDownAfterClass(): void {
 		if (!self::$wasDatabaseAllowed && self::$realDatabase !== null) {
 			// in case an error is thrown in a test, PHPUnit jumps straight to tearDownAfterClass,
@@ -509,11 +533,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase {
 	}
 
 	protected function IsDatabaseAccessAllowed() {
-		// on travis-ci.org we allow database access in any case - otherwise
-		// this will break all apps right away
-		if (getenv('TRAVIS') == true) {
-			return true;
-		}
 		$annotations = $this->getGroupAnnotations();
 		if (isset($annotations)) {
 			if (in_array('DB', $annotations) || in_array('SLOWDB', $annotations)) {
@@ -530,7 +549,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase {
 	 * @param array $vars
 	 */
 	protected function assertTemplate($expectedHtml, $template, $vars = []) {
-		require_once __DIR__.'/../../lib/private/legacy/template/functions.php';
+		require_once __DIR__ . '/../../lib/private/legacy/template/functions.php';
 
 		$requestToken = 12345;
 		/** @var Defaults|\PHPUnit\Framework\MockObject\MockObject $l10n */

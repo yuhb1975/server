@@ -29,13 +29,7 @@ class Storage extends Wrapper {
 
 	/**
 	 * Storage constructor.
-	 *
 	 * @param array $parameters
-	 * @param ITrashManager|null $trashManager
-	 * @param IUserManager|null $userManager
-	 * @param LoggerInterface|null $logger
-	 * @param IEventDispatcher|null $eventDispatcher
-	 * @param IRootFolder|null $rootFolder
 	 */
 	public function __construct(
 		$parameters,
@@ -43,7 +37,7 @@ class Storage extends Wrapper {
 		?IUserManager $userManager = null,
 		?LoggerInterface $logger = null,
 		?IEventDispatcher $eventDispatcher = null,
-		?IRootFolder $rootFolder = null
+		?IRootFolder $rootFolder = null,
 	) {
 		$this->mountPoint = $parameters['mountPoint'];
 		$this->trashManager = $trashManager;
@@ -54,14 +48,7 @@ class Storage extends Wrapper {
 		parent::__construct($parameters);
 	}
 
-	/**
-	 * Deletes the given file by moving it into the trashbin.
-	 *
-	 * @param string $path path of file or folder to delete
-	 *
-	 * @return bool true if the operation succeeded, false otherwise
-	 */
-	public function unlink($path) {
+	public function unlink(string $path): bool {
 		if ($this->trashEnabled) {
 			try {
 				return $this->doDelete($path, 'unlink');
@@ -78,14 +65,7 @@ class Storage extends Wrapper {
 		}
 	}
 
-	/**
-	 * Deletes the given folder by moving it into the trashbin.
-	 *
-	 * @param string $path path of folder to delete
-	 *
-	 * @return bool true if the operation succeeded, false otherwise
-	 */
-	public function rmdir($path) {
+	public function rmdir(string $path): bool {
 		if ($this->trashEnabled) {
 			return $this->doDelete($path, 'rmdir');
 		} else {
@@ -96,11 +76,8 @@ class Storage extends Wrapper {
 	/**
 	 * check if it is a file located in data/user/files only files in the
 	 * 'files' directory should be moved to the trash
-	 *
-	 * @param $path
-	 * @return bool
 	 */
-	protected function shouldMoveToTrash($path) {
+	protected function shouldMoveToTrash(string $path): bool {
 		$normalized = Filesystem::normalizePath($this->mountPoint . '/' . $path);
 		$parts = explode('/', $normalized);
 		if (count($parts) < 4 || strpos($normalized, '/appdata_') === 0) {
@@ -138,7 +115,7 @@ class Storage extends Wrapper {
 	 * @param Node $node
 	 * @return MoveToTrashEvent
 	 */
-	protected function createMoveToTrashEvent(Node $node) {
+	protected function createMoveToTrashEvent(Node $node): MoveToTrashEvent {
 		return new MoveToTrashEvent($node);
 	}
 
@@ -150,7 +127,7 @@ class Storage extends Wrapper {
 	 *
 	 * @return bool true if the operation succeeded, false otherwise
 	 */
-	private function doDelete($path, $method) {
+	private function doDelete(string $path, string $method): bool {
 		if (
 			!\OC::$server->getAppManager()->isEnabledForUser('files_trashbin')
 			|| (pathinfo($path, PATHINFO_EXTENSION) === 'part')
@@ -176,7 +153,7 @@ class Storage extends Wrapper {
 	/**
 	 * Setup the storage wrapper callback
 	 */
-	public static function setupStorage() {
+	public static function setupStorage(): void {
 		$trashManager = \OC::$server->get(ITrashManager::class);
 		$userManager = \OC::$server->get(IUserManager::class);
 		$logger = \OC::$server->get(LoggerInterface::class);
@@ -201,7 +178,7 @@ class Storage extends Wrapper {
 		return $this->mountPoint;
 	}
 
-	public function moveFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath) {
+	public function moveFromStorage(IStorage $sourceStorage, string $sourceInternalPath, string $targetInternalPath): bool {
 		$sourceIsTrashbin = $sourceStorage->instanceOfStorage(Storage::class);
 		try {
 			// the fallback for moving between storage involves a copy+delete
@@ -225,11 +202,11 @@ class Storage extends Wrapper {
 		}
 	}
 
-	protected function disableTrash() {
+	protected function disableTrash(): void {
 		$this->trashEnabled = false;
 	}
 
-	protected function enableTrash() {
+	protected function enableTrash(): void {
 		$this->trashEnabled = true;
 	}
 }

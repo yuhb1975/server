@@ -17,6 +17,7 @@ use OC\Authentication\Token\TokenCleanupJob;
 use OC\Log\Rotate;
 use OC\Preview\BackgroundCleanupJob;
 use OC\TextProcessing\RemoveOldTasksBackgroundJob;
+use OC\User\BackgroundJobs\CleanupDeletedUsers;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\IJobList;
 use OCP\Defaults;
@@ -32,6 +33,7 @@ use OCP\L10N\IFactory as IL10NFactory;
 use OCP\Migration\IOutput;
 use OCP\Security\ISecureRandom;
 use OCP\Server;
+use OCP\ServerVersion;
 use Psr\Log\LoggerInterface;
 
 class Setup {
@@ -44,7 +46,7 @@ class Setup {
 		protected Defaults $defaults,
 		protected LoggerInterface $logger,
 		protected ISecureRandom $random,
-		protected Installer $installer
+		protected Installer $installer,
 	) {
 		$this->l10n = $l10nFactory->get('lib');
 	}
@@ -377,10 +379,10 @@ class Setup {
 		//and we are done
 		$config->setSystemValue('installed', true);
 		if (self::shouldRemoveCanInstallFile()) {
-			unlink(\OC::$configDir.'/CAN_INSTALL');
+			unlink(\OC::$configDir . '/CAN_INSTALL');
 		}
 
-		$bootstrapCoordinator = \OCP\Server::get(\OC\AppFramework\Bootstrap\Coordinator::class);
+		$bootstrapCoordinator = Server::get(\OC\AppFramework\Bootstrap\Coordinator::class);
 		$bootstrapCoordinator->runInitialRegistration();
 
 		// Create a session token for the newly created user
@@ -414,6 +416,7 @@ class Setup {
 		$jobList->add(Rotate::class);
 		$jobList->add(BackgroundCleanupJob::class);
 		$jobList->add(RemoveOldTasksBackgroundJob::class);
+		$jobList->add(CleanupDeletedUsers::class);
 	}
 
 	/**
@@ -484,7 +487,7 @@ class Setup {
 			$content .= "\n  Options -MultiViews";
 			$content .= "\n  RewriteRule ^core/js/oc.js$ index.php [PT,E=PATH_INFO:$1]";
 			$content .= "\n  RewriteRule ^core/preview.png$ index.php [PT,E=PATH_INFO:$1]";
-			$content .= "\n  RewriteCond %{REQUEST_FILENAME} !\\.(css|js|mjs|svg|gif|ico|jpg|jpeg|png|webp|html|ttf|woff2?|map|webm|mp4|mp3|ogg|wav|flac|wasm|tflite)$";
+			$content .= "\n  RewriteCond %{REQUEST_FILENAME} !\\.(css|js|mjs|svg|gif|ico|jpg|jpeg|png|webp|html|otf|ttf|woff2?|map|webm|mp4|mp3|ogg|wav|flac|wasm|tflite)$";
 			$content .= "\n  RewriteCond %{REQUEST_FILENAME} !/core/ajax/update\\.php";
 			$content .= "\n  RewriteCond %{REQUEST_FILENAME} !/core/img/(favicon\\.ico|manifest\\.json)$";
 			$content .= "\n  RewriteCond %{REQUEST_FILENAME} !/(cron|public|remote|status)\\.php";
@@ -561,11 +564,11 @@ class Setup {
 	}
 
 	public function shouldRemoveCanInstallFile(): bool {
-		return \OC_Util::getChannel() !== 'git' && is_file(\OC::$configDir.'/CAN_INSTALL');
+		return Server::get(ServerVersion::class)->getChannel() !== 'git' && is_file(\OC::$configDir . '/CAN_INSTALL');
 	}
 
 	public function canInstallFileExists(): bool {
-		return is_file(\OC::$configDir.'/CAN_INSTALL');
+		return is_file(\OC::$configDir . '/CAN_INSTALL');
 	}
 
 	protected function outputDebug(?IOutput $output, string $message): void {

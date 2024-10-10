@@ -59,7 +59,7 @@ class AppleProvisioningPlugin extends ServerPlugin {
 		\OC_Defaults $themingDefaults,
 		IRequest $request,
 		IL10N $l10n,
-		\Closure $uuidClosure
+		\Closure $uuidClosure,
 	) {
 		$this->userSession = $userSession;
 		$this->urlGenerator = $urlGenerator;
@@ -133,7 +133,7 @@ class AppleProvisioningPlugin extends ServerPlugin {
 		$filename = $userId . '-' . AppleProvisioningNode::FILENAME;
 
 		$xmlSkeleton = $this->getTemplate();
-		$body = vsprintf($xmlSkeleton, array_map(function ($v) {
+		$body = vsprintf($xmlSkeleton, array_map(function (string $v) {
 			return \htmlspecialchars($v, ENT_XML1, 'UTF-8');
 		}, [
 			$description,

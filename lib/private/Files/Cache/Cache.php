@@ -265,6 +265,9 @@ class Cache implements ICache {
 		if (!isset($data['parent'])) {
 			$data['parent'] = $this->getParentId($file);
 		}
+		if ($data['parent'] === -1 && $file !== '') {
+			throw new \Exception('Parent folder not in filecache for ' . $file);
+		}
 		$data['name'] = basename($file);
 
 		[$values, $extensionValues] = $this->normalizeData($data);
@@ -1110,7 +1113,7 @@ class Cache implements ICache {
 	 *
 	 * @param int $id
 	 * @return array first element holding the storage id, second the path
-	 * @deprecated use getPathById() instead
+	 * @deprecated 17.0.0 use getPathById() instead
 	 */
 	public static function getById($id) {
 		$query = \OC::$server->getDatabaseConnection()->getQueryBuilder();
@@ -1207,7 +1210,7 @@ class Cache implements ICache {
 		}
 	}
 
-	private function moveFromStorageSharded(ShardDefinition $shardDefinition, ICache $sourceCache, ICacheEntry $sourceEntry, $targetPath) {
+	private function moveFromStorageSharded(ShardDefinition $shardDefinition, ICache $sourceCache, ICacheEntry $sourceEntry, $targetPath): void {
 		if ($sourceEntry->getMimeType() === ICacheEntry::DIRECTORY_MIMETYPE) {
 			$fileIds = $this->getChildIds($sourceCache->getNumericStorageId(), $sourceEntry->getPath());
 		} else {

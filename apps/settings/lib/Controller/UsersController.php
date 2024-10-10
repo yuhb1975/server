@@ -147,23 +147,17 @@ class UsersController extends Controller {
 				}, 0);
 			} else {
 				// User is subadmin !
-				// Map group list to names to retrieve the countDisabledUsersOfGroups
+				// Map group list to ids to retrieve the countDisabledUsersOfGroups
 				$userGroups = $this->groupManager->getUserGroups($user);
-				$groupsNames = [];
+				$groupsIds = [];
 
 				foreach ($groups as $key => $group) {
 					// $userCount += (int)$group['usercount'];
-					$groupsNames[] = $group['name'];
-					// we prevent subadmins from looking up themselves
-					// so we lower the count of the groups he belongs to
-					if (array_key_exists($group['id'], $userGroups)) {
-						$groups[$key]['usercount']--;
-						$userCount -= 1; // we also lower from one the total count
-					}
+					$groupsIds[] = $group['id'];
 				}
 
 				$userCount += $this->userManager->countUsersOfGroups($groupsInfo->getGroups());
-				$disabledUsers = $this->userManager->countDisabledUsersOfGroups($groupsNames);
+				$disabledUsers = $this->userManager->countDisabledUsersOfGroups($groupsIds);
 			}
 
 			$userCount -= $disabledUsers;
@@ -335,6 +329,8 @@ class UsersController extends Controller {
 		?string $fediverseScope = null,
 		?string $birthdate = null,
 		?string $birthdateScope = null,
+		?string $pronouns = null,
+		?string $pronounsScope = null,
 	) {
 		$user = $this->userSession->getUser();
 		if (!$user instanceof IUser) {
@@ -375,6 +371,7 @@ class UsersController extends Controller {
 			IAccountManager::PROPERTY_TWITTER => ['value' => $twitter, 'scope' => $twitterScope],
 			IAccountManager::PROPERTY_FEDIVERSE => ['value' => $fediverse, 'scope' => $fediverseScope],
 			IAccountManager::PROPERTY_BIRTHDATE => ['value' => $birthdate, 'scope' => $birthdateScope],
+			IAccountManager::PROPERTY_PRONOUNS => ['value' => $pronouns, 'scope' => $pronounsScope],
 		];
 		$allowUserToChangeDisplayName = $this->config->getSystemValueBool('allow_user_to_change_display_name', true);
 		foreach ($updatable as $property => $data) {
@@ -418,6 +415,8 @@ class UsersController extends Controller {
 						'fediverseScope' => $userAccount->getProperty(IAccountManager::PROPERTY_FEDIVERSE)->getScope(),
 						'birthdate' => $userAccount->getProperty(IAccountManager::PROPERTY_BIRTHDATE)->getValue(),
 						'birthdateScope' => $userAccount->getProperty(IAccountManager::PROPERTY_BIRTHDATE)->getScope(),
+						'pronouns' => $userAccount->getProperty(IAccountManager::PROPERTY_PRONOUNS)->getValue(),
+						'pronounsScope' => $userAccount->getProperty(IAccountManager::PROPERTY_PRONOUNS)->getScope(),
 						'message' => $this->l10n->t('Settings saved'),
 					],
 				],

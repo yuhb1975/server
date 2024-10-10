@@ -19,12 +19,13 @@ class SyncJob extends TimedJob {
 		parent::__construct($timeFactory);
 		// Run once a day
 		$this->setInterval(24 * 60 * 60);
+		$this->setTimeSensitivity(self::TIME_INSENSITIVE);
 		$this->syncService = $syncService;
 		$this->logger = $logger;
 	}
 
 	protected function run($argument) {
-		$this->syncService->syncThemAll(function ($url, $ex) {
+		$this->syncService->syncThemAll(function ($url, $ex): void {
 			if ($ex instanceof \Exception) {
 				$this->logger->error("Error while syncing $url.", [
 					'app' => 'fed-sync',

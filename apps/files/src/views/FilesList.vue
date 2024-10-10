@@ -658,7 +658,7 @@ export default defineComponent({
 		},
 
 		filterDirContent() {
-			let nodes = this.dirContents
+			let nodes: INode[] = this.dirContents
 			for (const filter of this.filtersStore.sortedFilters) {
 				nodes = filter.filter(nodes)
 			}
@@ -669,6 +669,13 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+:global(.toast-loading-icon) {
+	// Reduce start margin (it was made for text but this is an icon)
+	margin-inline-start: -4px;
+	// 16px icon + 5px on both sides
+	min-width: 26px;
+}
+
 .app-content {
 	// Virtual list needs to be full height and is scrollable
 	display: flex;

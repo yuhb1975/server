@@ -24,7 +24,7 @@ class ExpireTrash extends TimedJob {
 		IConfig $config,
 		IUserManager $userManager,
 		Expiration $expiration,
-		ITimeFactory $time
+		ITimeFactory $time,
 	) {
 		parent::__construct($time);
 		// Run once per 30 minutes
@@ -50,7 +50,7 @@ class ExpireTrash extends TimedJob {
 			return;
 		}
 
-		$this->userManager->callForSeenUsers(function (IUser $user) {
+		$this->userManager->callForSeenUsers(function (IUser $user): void {
 			$uid = $user->getUID();
 			if (!$this->setupFS($uid)) {
 				return;

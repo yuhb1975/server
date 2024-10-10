@@ -312,7 +312,7 @@ class Manager implements IManager {
 					$resources = [];
 					$files = [];
 					for ($i = 0; $i < $input['numberOfImages']; $i++) {
-						$file = $folder->newFile(time() . '-' . rand(1, 100000) . '-' .  $i);
+						$file = $folder->newFile(time() . '-' . rand(1, 100000) . '-' . $i);
 						$files[] = $file;
 						$resource = $file->write();
 						if ($resource !== false && $resource !== true && is_resource($resource)) {
@@ -593,7 +593,7 @@ class Manager implements IManager {
 				$type->validateInput($io[$key]);
 				if ($type === EShapeType::Enum) {
 					if (!isset($enumValues[$key])) {
-						throw new ValidationException('Provider did not provide enum values for an enum slot: "' . $key .'"');
+						throw new ValidationException('Provider did not provide enum values for an enum slot: "' . $key . '"');
 					}
 					$type->validateEnum($io[$key], $enumValues[$key]);
 				}
@@ -921,7 +921,7 @@ class Manager implements IManager {
 					if ($value instanceof Node) {
 						$output[$key] = $value->getId();
 					}
-					if (is_array($value) && $value[0] instanceof Node) {
+					if (is_array($value) && isset($value[0]) && $value[0] instanceof Node) {
 						$output[$key] = array_map(fn ($node) => $node->getId(), $value);
 					}
 				}
@@ -1048,7 +1048,7 @@ class Manager implements IManager {
 
 	public function getTasks(
 		?string $userId, ?string $taskTypeId = null, ?string $appId = null, ?string $customId = null,
-		?int $status = null, ?int $scheduleAfter = null, ?int $endedBefore = null
+		?int $status = null, ?int $scheduleAfter = null, ?int $endedBefore = null,
 	): array {
 		try {
 			$taskEntities = $this->taskMapper->findTasks($userId, $taskTypeId, $appId, $customId, $status, $scheduleAfter, $endedBefore);
@@ -1203,7 +1203,7 @@ class Manager implements IManager {
 		$provider = $this->getPreferredProvider($task->getTaskTypeId());
 		// calculate expected completion time
 		$completionExpectedAt = new \DateTime('now');
-		$completionExpectedAt->add(new \DateInterval('PT'.$provider->getExpectedRuntime().'S'));
+		$completionExpectedAt->add(new \DateInterval('PT' . $provider->getExpectedRuntime() . 'S'));
 		$task->setCompletionExpectedAt($completionExpectedAt);
 	}
 

@@ -7,6 +7,8 @@
  */
 use OC\Authentication\Token\IProvider;
 use OC\User\LoginException;
+use OCP\Authentication\Exceptions\InvalidTokenException;
+use OCP\Authentication\Exceptions\WipeTokenException;
 use OCP\Authentication\Token\IToken;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IGroupManager;
@@ -14,6 +16,7 @@ use OCP\ISession;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\Server;
+use OCP\Session\Exceptions\SessionNotAvailableException;
 use OCP\User\Events\BeforeUserLoggedInEvent;
 use OCP\User\Events\UserLoggedInEvent;
 use Psr\Log\LoggerInterface;
@@ -171,12 +174,17 @@ class OC_User {
 
 				if (empty($password)) {
 					$tokenProvider = \OC::$server->get(IProvider::class);
-					$token = $tokenProvider->getToken($userSession->getSession()->getId());
-					$token->setScope([
-						IToken::SCOPE_SKIP_PASSWORD_VALIDATION => true,
-						IToken::SCOPE_FILESYSTEM => true,
-					]);
-					$tokenProvider->updateToken($token);
+					try {
+						$token = $tokenProvider->getToken($userSession->getSession()->getId());
+						$token->setScope([
+							IToken::SCOPE_SKIP_PASSWORD_VALIDATION => true,
+							IToken::SCOPE_FILESYSTEM => true,
+						]);
+						$tokenProvider->updateToken($token);
+					} catch (InvalidTokenException|WipeTokenException|SessionNotAvailableException) {
+						// swallow the exceptions as we do not deal with them here
+						// simply skip updating the token when is it missing
+					}
 				}
 
 				// setup the filesystem
@@ -251,7 +259,7 @@ class OC_User {
 	/**
 	 * Check if the user is logged in, considers also the HTTP basic credentials
 	 *
-	 * @deprecated use \OC::$server->getUserSession()->isLoggedIn()
+	 * @deprecated 12.0.0 use \OC::$server->getUserSession()->isLoggedIn()
 	 * @return bool
 	 */
 	public static function isLoggedIn() {
@@ -353,7 +361,7 @@ class OC_User {
 	 * @return string
 	 *
 	 * returns the path to the users home directory
-	 * @deprecated Use \OC::$server->getUserManager->getHome()
+	 * @deprecated 12.0.0 Use \OC::$server->getUserManager->getHome()
 	 */
 	public static function getHome($uid) {
 		$user = \OC::$server->getUserManager()->get($uid);
@@ -373,7 +381,7 @@ class OC_User {
 	 * @return array associative array with all display names (value) and corresponding uids (key)
 	 *
 	 * Get a list of all display names and user ids.
-	 * @deprecated Use \OC::$server->getUserManager->searchDisplayName($search, $limit, $offset) instead.
+	 * @deprecated 12.0.0 Use \OC::$server->getUserManager->searchDisplayName($search, $limit, $offset) instead.
 	 */
 	public static function getDisplayNames($search = '', $limit = null, $offset = null) {
 		$displayNames = [];

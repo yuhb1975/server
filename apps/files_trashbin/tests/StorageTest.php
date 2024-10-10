@@ -8,7 +8,6 @@ namespace OCA\Files_Trashbin\Tests;
 
 use OC\Files\Filesystem;
 use OC\Files\Storage\Common;
-use OC\Files\Storage\Local;
 use OC\Files\Storage\Temporary;
 use OCA\Files_Trashbin\AppInfo\Application;
 use OCA\Files_Trashbin\Events\MoveToTrashEvent;
@@ -29,11 +28,11 @@ use Psr\Log\LoggerInterface;
 use Test\Traits\MountProviderTrait;
 
 class TemporaryNoCross extends Temporary {
-	public function copyFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath, $preserveMtime = null) {
+	public function copyFromStorage(IStorage $sourceStorage, string $sourceInternalPath, string $targetInternalPath, ?bool $preserveMtime = null): bool {
 		return Common::copyFromStorage($sourceStorage, $sourceInternalPath, $targetInternalPath, $preserveMtime);
 	}
 
-	public function moveFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath) {
+	public function moveFromStorage(IStorage $sourceStorage, string $sourceInternalPath, string $targetInternalPath): bool {
 		return Common::moveFromStorage($sourceStorage, $sourceInternalPath, $targetInternalPath);
 	}
 }
@@ -591,6 +590,7 @@ class StorageTest extends \Test\TestCase {
 		$event->expects($this->any())->method('shouldMoveToTrashBin')->willReturn(!$appDisablesTrash);
 
 		$userFolder->expects($this->any())->method('getById')->with($fileID)->willReturn([$node]);
+		$rootFolder->expects($this->any())->method('getById')->with($fileID)->willReturn([$node]);
 		$rootFolder->expects($this->any())->method('getUserFolder')->willReturn($userFolder);
 
 		$storage = $this->getMockBuilder(Storage::class)
@@ -672,9 +672,6 @@ class StorageTest extends \Test\TestCase {
 	}
 
 	public function testMoveFromStoragePreserveFileId(): void {
-		if (!$this->userView->getMount('')->getStorage()->instanceOfStorage(Local::class)) {
-			$this->markTestSkipped('Skipping on non-local users storage');
-		}
 		$this->userView->file_put_contents('test.txt', 'foo');
 		$fileId = $this->userView->getFileInfo('test.txt')->getId();
 

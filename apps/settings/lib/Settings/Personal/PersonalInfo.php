@@ -71,7 +71,7 @@ class PersonalInfo implements ISettings {
 		IFactory $l10nFactory,
 		IL10N $l,
 		IInitialState $initialStateService,
-		IManager $manager
+		IManager $manager,
 	) {
 		$this->config = $config;
 		$this->userManager = $userManager;
@@ -143,6 +143,7 @@ class PersonalInfo implements ISettings {
 			'biography' => $this->getProperty($account, IAccountManager::PROPERTY_BIOGRAPHY),
 			'birthdate' => $this->getProperty($account, IAccountManager::PROPERTY_BIRTHDATE),
 			'firstDayOfWeek' => $this->config->getUserValue($uid, 'core', AUserData::USER_FIELD_FIRST_DAY_OF_WEEK),
+			'pronouns' => $this->getProperty($account, IAccountManager::PROPERTY_PRONOUNS),
 		];
 
 		$accountParameters = [

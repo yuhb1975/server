@@ -256,7 +256,7 @@ class ThemingControllerTest extends TestCase {
 			->method('getUploadedFile')
 			->with('image')
 			->willReturn([
-				'tmp_name' => __DIR__  . '/../../../../tests/data/testimagelarge.svg',
+				'tmp_name' => __DIR__ . '/../../../../tests/data/testimagelarge.svg',
 				'type' => 'image/svg',
 				'name' => 'testimagelarge.svg',
 				'error' => 0,
@@ -297,7 +297,7 @@ class ThemingControllerTest extends TestCase {
 			->method('getUploadedFile')
 			->with('image')
 			->willReturn([
-				'tmp_name' => __DIR__  . '/../../../../tests/data/lorem.txt',
+				'tmp_name' => __DIR__ . '/../../../../tests/data/lorem.txt',
 				'type' => 'application/pdf',
 				'name' => 'logo.pdf',
 				'error' => 0,
@@ -443,7 +443,7 @@ class ThemingControllerTest extends TestCase {
 		$tmpLogo = \OC::$server->getTempManager()->getTemporaryFolder() . '/logo.svg';
 
 		touch($tmpLogo);
-		file_put_contents($tmpLogo, file_get_contents(__DIR__  . '/../../../../tests/data/data.zip'));
+		file_put_contents($tmpLogo, file_get_contents(__DIR__ . '/../../../../tests/data/data.zip'));
 		$this->request
 			->expects($this->once())
 			->method('getParam')
@@ -715,13 +715,10 @@ class ThemingControllerTest extends TestCase {
 		$this->urlGenerator
 			->expects($this->exactly(2))
 			->method('linkToRoute')
-			->withConsecutive(
-				['theming.Icon.getTouchIcon', ['app' => 'core']],
-				['theming.Icon.getFavicon', ['app' => 'core']],
-			)->willReturnOnConsecutiveCalls(
-				'touchicon',
-				'favicon',
-			);
+			->willReturnMap([
+				['theming.Icon.getTouchIcon', ['app' => 'core'], 'touchicon'],
+				['theming.Icon.getFavicon', ['app' => 'core'], 'favicon'],
+			]);
 		$response = new Http\JSONResponse([
 			'name' => 'Nextcloud',
 			'start_url' => 'localhost',
